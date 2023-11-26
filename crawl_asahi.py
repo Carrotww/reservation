@@ -1,4 +1,5 @@
 from selenium import webdriver
+from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
@@ -6,7 +7,12 @@ import time
 import aws_sms
 
 def find_available_dates(url, year, month, days):
-    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()))
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # 헤드리스 모드 활성화
+    chrome_options.add_argument("--no-sandbox")  # 샌드박스 비활성화
+    chrome_options.add_argument("--disable-dev-shm-usage")  # /dev/shm 파티션 사용 제한 해제
+
+    driver = webdriver.Chrome(service=ChromeService(ChromeDriverManager().install()), options=chrome_options)
     driver.get(url)
 
     time.sleep(5)
