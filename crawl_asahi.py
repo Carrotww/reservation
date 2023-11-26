@@ -44,4 +44,4 @@ available_days = find_available_dates(url, 2023, 12, [2, 3])
 
 # 예약 가능한 날짜가 있으면 SMS 보내기
 for available_day in available_days:
-    aws_sms.main("오사카 아사히 맥주공장", available_day, url)
+    aws_sms.main('오사카 아사히 맥주공장', available_day, url)
