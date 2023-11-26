@@ -17,7 +17,7 @@ client = Client(account_sid, auth_token)
 
 message = client.messages \
                 .create(
-                     body="세영아 안녕??",
+                     body="",
                      from_=server_phone_number,
                      to=phone_number_1
                  )
