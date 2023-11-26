@@ -3,8 +3,8 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-import time
-import aws_sms
+import time, aws_sms
+
 
 def find_available_dates(url, year, month, days):
     chrome_options = Options()
@@ -44,4 +44,7 @@ available_days = find_available_dates(url, 2023, 12, [2, 3])
 
 # 예약 가능한 날짜가 있으면 SMS 보내기
 for available_day in available_days:
+    # 문자 전송
     aws_sms.main('오사카 아사히 맥주공장', available_day, url)
+    # json file update
+    
