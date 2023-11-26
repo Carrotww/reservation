@@ -40,7 +40,7 @@ def find_available_dates(url, year, month, days):
 
 # 함수 사용 예시: 2023년 12월 2일, 3일 중 예약 가능한 날짜 찾기
 url = 'https://factory.asahibeer.co.jp/reservation/?area=suita'
-available_days = find_available_dates(url, 2023, 12, [2, 3])
+available_days = find_available_dates(url, 2023, 12, [2, 3, 9])
 
 # 예약 가능한 날짜가 있으면 SMS 보내기
 for available_day in available_days:
