@@ -1,59 +1,40 @@
 import boto3
-from botocore.exceptions import ClientError
+import os
+from dotenv import load_dotenv
 
+# .env 파일에서 환경 변수 로드
+load_dotenv()
 
-def send_sms_message(sms_voice_v2_client, configuration_set, context_keys,
-                     country_parameters, destination_number, dry_run, keyword,
-                     max_price, message_body, message_type, origination_number,
-                     ttl):
-    try:
-        response = sms_voice_v2_client.send_text_message(
-            ConfigurationSetName=configuration_set,
-            Context=context_keys,
-            DestinationCountryParameters=country_parameters,
-            DestinationPhoneNumber=destination_number,
-            DryRun=dry_run,
-            Keyword=keyword,
-            MaxPrice=max_price,
-            MessageBody=message_body,
-            MessageType=message_type,
-            OriginationIdentity=origination_number,
-            TimeToLive=ttl
-        )
+# 환경 변수에서 AWS 자격증명 가져오기
+aws_access_key_id = os.getenv('AWS_ACCESS_KEY_ID')
+aws_secret_access_key = os.getenv('AWS_SECRET_ACCESS_KEY')
+aws_region = os.getenv('AWS_REGION')
+user_phone_number1 = os.getenv('USER1')
+user_phone_number2 = os.getenv('USER2')
+user_list = []
+user_list.append(user_phone_number1)
+user_list.append(user_phone_number2)
+template = "문자 내용 입력"
 
-    except ClientError as e:
-        print(e.response)
-    else:
-        return response['MessageId']
+# AWS SNS 클라이언트 생성
+client = boto3.client(
+    'sns',
+    region_name=aws_region,
+    aws_access_key_id=aws_access_key_id,
+    aws_secret_access_key=aws_secret_access_key
+)
 
+def response_msg(phone_number, message):
+    response = client.publish(
+        PhoneNumber=phone_number,
+        Message=message,
+        MessageAttributes={
+            'AWS.SNS.SMS.SMSType': {
+                'DataType': 'String',
+                'StringValue': 'Transactional'
+            }
+        }
+    )
 
-def main():
-    configuration_set = "MyConfigurationSet"
-    context_keys = {"key1": "value1"}
-    country_parameters = {
-        "IN_TEMPLATE_ID": "TEMPLATE01234",
-        "IN_ENTITY_ID": "ENTITY98765"
-    }
-    destination_number = "+14258918757"
-    dry_run = False
-    keyword = "MyKeyword"
-    max_price = "2.00"
-    message_body = ("This is a test message sent from Amazon Pinpoint "
-                    "using the AWS SDK for Python (Boto3). ")
-    message_type = "TRANSACTIONAL"
-    origination_number = "+18449831743"
-    ttl = 120
-
-    print(
-        f"Sending text message to {destination_number}.")
-
-    message_id = send_sms_message(
-        boto3.client('pinpoint-sms-voice-v2'), configuration_set, context_keys,
-        country_parameters, destination_number, dry_run, keyword, max_price,
-        message_body, message_type, origination_number, ttl)
-
-    print(f"Message sent!\nMessage ID: {message_id}")
-
-
-if __name__ == '__main__':
-    main()
+for user_phone_number in user_list:
+    response_msg(user_phone_number, template)
