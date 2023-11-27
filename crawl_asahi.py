@@ -3,7 +3,7 @@ from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service as ChromeService
 from webdriver_manager.chrome import ChromeDriverManager
 from bs4 import BeautifulSoup
-import time, aws_sms
+import time, aws_sms, update_json
 
 
 def find_available_dates(url, year, month, days):
@@ -43,8 +43,20 @@ url = 'https://factory.asahibeer.co.jp/reservation/?area=suita'
 available_days = find_available_dates(url, 2023, 12, [2, 3])
 
 # 예약 가능한 날짜가 있으면 SMS 보내기
-for available_day in available_days:
-    # 문자 전송
-    aws_sms.main('오사카 아사히 맥주공장', available_day, url)
-    # json file update
-    
+if available_days:
+    for available_day in available_days:
+        name = '오사카 아사히 맥주공장'
+        formatted_date = available_day.replace('-', '')
+
+        # 문자 전송 필요 여부 확인
+        if update_json.need_update_status(name, formatted_date):
+            aws_sms.main(name, available_day, url)
+            update_json.increment_status(name, formatted_date)
+else:
+    # 예약 가능한 날짜가 없는 경우
+    name_and_date_dict = update_json.load_all_status()
+    for key, status in name_and_date_dict.items():
+        name, date = key.split('2023')
+        formatted_date = '2023' + date
+        if update_json.load_status(name, formatted_date) != 0:
+            update_json.clean_status(name, formatted_date)
